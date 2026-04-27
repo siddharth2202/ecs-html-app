@@ -1,36 +1,36 @@
 version: 0.2
 
 env:
-variables:
-AWS_DEFAULT_REGION: ap-south-1
-ECR_REPO_NAME: ecs-html-app
-CONTAINER_NAME: html-container
+  variables:
+    AWS_DEFAULT_REGION: ap-south-1
+    ECR_REPO_NAME: ecs-html-app
+    CONTAINER_NAME: html-container
 
 phases:
-pre_build:
-commands:
-- echo Logging in to Amazon ECR...
-- ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-- REPOSITORY_URI=$ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME
-- aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
-- echo Setting image tag...
-- IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-- echo Image tag is $IMAGE_TAG
-- echo Repository URI is $REPOSITORY_URI
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+      - REPOSITORY_URI=$ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
+      - echo Setting image tag...
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - echo Image tag is $IMAGE_TAG
+      - echo Repository URI is $REPOSITORY_URI
 
-build:
-commands:
-- echo Build started on $(date)
-- docker build -t $ECR_REPO_NAME:$IMAGE_TAG .
-- docker tag $ECR_REPO_NAME:$IMAGE_TAG $REPOSITORY_URI:$IMAGE_TAG
+  build:
+    commands:
+      - echo Build started on $(date)
+      - docker build -t $ECR_REPO_NAME:$IMAGE_TAG .
+      - docker tag $ECR_REPO_NAME:$IMAGE_TAG $REPOSITORY_URI:$IMAGE_TAG
 
-post_build:
-commands:
-- echo Pushing Docker image...
-- docker push $REPOSITORY_URI:$IMAGE_TAG
-- echo Writing imagedefinitions.json...
-- printf '[{"name":"%s","imageUri":"%s"}]' $CONTAINER_NAME $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+  post_build:
+    commands:
+      - echo Pushing Docker image...
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - echo Writing imagedefinitions.json...
+      - printf '[{"name":"%s","imageUri":"%s"}]' $CONTAINER_NAME $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
 
 artifacts:
-files:
-- imagedefinitions.json
+  files:
+    - imagedefinitions.json
