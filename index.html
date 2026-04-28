@@ -45,10 +45,13 @@
 </p>
 
 <p class="version">
-    Version: V8 | Deployed via CI/CD
-    Time: <current time>
+    Version: V9 | Deployed via CI/CD 
+    Time: <span id="time"></span>
 </p>
-```
+
+<script>
+  document.getElementById("time").textContent = new Date().toLocaleString();
+</script>
 
 </div>
 
